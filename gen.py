@@ -130,17 +130,28 @@ html_doc = f'''<!DOCTYPE html>
   window.addEventListener('scroll', function () {{ if (!ticking) {{ ticking = true; requestAnimationFrame(paint); }} }}, {{ passive: true }});
   paint();
 
+  // copy helper with fallback for restricted clipboard contexts
+  function copyText(t, btn) {{
+    function done() {{ btn.textContent = 'Copied'; setTimeout(function () {{ btn.textContent = 'Copy'; }}, 1600); }}
+    function fallback() {{
+      var ta = document.createElement('textarea');
+      ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try {{ document.execCommand('copy'); done(); }} catch (e) {{}}
+      document.body.removeChild(ta);
+    }}
+    if (navigator.clipboard && navigator.clipboard.writeText) {{
+      navigator.clipboard.writeText(t).then(done).catch(fallback);
+    }} else {{ fallback(); }}
+  }}
+
   // copy buttons on code blocks
   document.querySelectorAll('pre').forEach(function (pre) {{
     var btn = document.createElement('button');
     btn.className = 'copy-code'; btn.textContent = 'Copy';
     pre.appendChild(btn);
     btn.addEventListener('click', function () {{
-      var t = pre.querySelector('code').innerText;
-      navigator.clipboard.writeText(t).then(function () {{
-        btn.textContent = 'Copied';
-        setTimeout(function () {{ btn.textContent = 'Copy'; }}, 1600);
-      }});
+      copyText(pre.querySelector('code').innerText, btn);
     }});
   }});
 
@@ -162,10 +173,8 @@ html_doc = f'''<!DOCTYPE html>
 
   // end actions
   document.getElementById('copy-link').addEventListener('click', function () {{
-    navigator.clipboard.writeText(location.href).then(function () {{
-      var b = document.getElementById('copy-link'); b.textContent = 'Copied';
-      setTimeout(function () {{ b.textContent = 'Copy link'; }}, 1600);
-    }});
+    var b = document.getElementById('copy-link');
+    copyText(location.href, b);
   }});
   document.getElementById('to-top').addEventListener('click', function () {{
     window.scrollTo({{ top: 0, behavior: 'smooth' }});
