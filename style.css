@@ -139,15 +139,6 @@ h1 em { font-style: italic; color: var(--gold); }
 .chap-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .chap-meta span { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .06em; color: var(--faint); border: 1px solid var(--hairline); border-radius: 999px; padding: 4px 12px; }
 
-/* daily log section on index */
-.dailylog { padding: 72px 0 0; }
-.dailylog h2 { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 44px; margin-bottom: 8px; }
-.dailylog .lede { color: var(--muted); font-size: 16.5px; max-width: 520px; margin-bottom: 22px; }
-
-@media (max-width: 1023px) {
-  .article-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
-  .toc-wrap { display: none; }
-}
 
 /* footer */
 footer { margin-top: 110px; padding: 30px 0 48px; border-top: 1px solid var(--hairline); }
