@@ -15,13 +15,13 @@
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
+html, body { overflow-x: clip; }
 body {
   background: var(--bg);
   color: var(--ink);
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
 }
 /* film grain */
 body::after {
@@ -36,7 +36,7 @@ a:hover { color: var(--gold-hi); }
 .wrap { max-width: 860px; margin: 0 auto; padding: 0 28px; }
 
 /* hero */
-.hero { padding: 120px 0 72px; position: relative; }
+.hero { padding: 120px 0 72px; position: relative; overflow: hidden; }
 .hero::before {
   content: ""; position: absolute; top: -200px; right: -160px; width: 640px; height: 640px; border-radius: 50%;
   background: radial-gradient(circle, rgba(227, 179, 65, .10), transparent 65%); pointer-events: none;
