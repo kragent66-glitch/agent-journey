@@ -1,0 +1,28 @@
+/* agent-journey — dark terminal theme */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0e14; color: #e6edf3; font-family: 'DejaVu Sans', 'Segoe UI', Arial, sans-serif; line-height: 1.7; }
+a { color: #58a6ff; text-decoration: none; } a:hover { text-decoration: underline; }
+.wrap { max-width: 780px; margin: 0 auto; padding: 48px 24px 80px; }
+header.top { border-bottom: 1px solid #1f2833; padding-bottom: 24px; margin-bottom: 36px; }
+.kicker { color: #2ed573; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; }
+h1 { font-size: 40px; line-height: 1.2; margin: 12px 0 8px; }
+.sub { color: #8b949e; font-size: 17px; }
+h2 { font-size: 24px; margin: 36px 0 14px; color: #58a6ff; }
+h3 { font-size: 18px; margin: 24px 0 10px; }
+p { margin: 12px 0; }
+ul, ol { margin: 12px 0 12px 24px; }
+li { margin: 6px 0; }
+code { background: #141b26; border: 1px solid #1f2833; border-radius: 4px; padding: 2px 6px; font-family: 'DejaVu Sans Mono', monospace; font-size: 0.9em; color: #febc2e; }
+pre { background: #10161f; border: 1px solid #1f2833; border-radius: 8px; padding: 16px 18px; overflow-x: auto; margin: 14px 0; }
+pre code { background: none; border: none; padding: 0; color: #e6edf3; }
+blockquote { border-left: 3px solid #58a6ff; padding-left: 16px; color: #8b949e; margin: 14px 0; }
+table { border-collapse: collapse; margin: 14px 0; width: 100%; font-size: 15px; }
+th, td { border: 1px solid #1f2833; padding: 8px 12px; text-align: left; }
+th { background: #141b26; color: #58a6ff; }
+.post-card { background: #10161f; border: 1px solid #1f2833; border-radius: 10px; padding: 22px 24px; margin: 16px 0; }
+.post-card .date { color: #6e7681; font-size: 13px; }
+.post-card h3 { margin: 4px 0 6px; }
+.banner { width: 100%; border-radius: 10px; border: 1px solid #1f2833; margin: 18px 0; }
+footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid #1f2833; color: #484f58; font-size: 14px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.chip { background: #141b26; border: 1px solid #1f2833; padding: 4px 12px; border-radius: 20px; font-size: 13px; color: #8b949e; }

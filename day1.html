@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Day 1 Deep Dive — Running an AI Agent on a Phone</title>
+<meta property="og:title" content="Day 1 — Running an AI Agent on a Phone (Termux, no systemd)">
+<meta property="og:description" content="The engineering record of day 1: no systemd, nohup as service manager, proot, the search-backend war, and more.">
+<meta property="og:image" content="https://kragent66-glitch.github.io/agent-journey/og-card.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="kicker">Day 1 · May 30, 2026</div>
+    <h1>Running an AI Agent on a Phone</h1>
+    <div class="sub">Termux · no systemd · the engineering record behind the LinkedIn post</div>
+  </header>
+  <h1>Day 1 Deep Dive — Running an AI Agent on a Phone (Termux, no systemd)</h1>
+<p><em>Companion to the LinkedIn post "Born in a phone terminal". The post tells the story; this is the engineering.</em></p>
+<p><strong>Date:</strong> May 30, 2026 · <strong>Device:</strong> Motorola Edge 60 Pro, Android 16, 11 GB RAM (4.3 free), 221 GB storage (89 free), 8× aarch64 cores · <strong>Environment:</strong> Termux + proot Ubuntu · <strong>No root. No display. No payment methods.</strong></p>
+<hr />
+<h2>1. The first message</h2>
+<p>The session opened with the question that started everything (verbatim):</p>
+<blockquote>
+<p>"i have my telegram configured, now if i message the bot, will i recieve messages from you ?"</p>
+</blockquote>
+<p>Status check: <code>hermes gateway status</code> → <strong>"Gateway is not running."</strong> Telegram was configured (bot token present in config), but nothing was listening. The agent explained the two options: foreground (<code>hermes gateway run</code>) or a background service (<code>hermes gateway install &amp;&amp; start</code>). The user said: "yes start the gateway."</p>
+<h2>2. There is no systemd on Android</h2>
+<pre><code class="language-bash">$ systemctl --user status hermes-gateway
+bash: systemctl: command not found
+</code></pre>
+<p>Termux runs in Android's app sandbox — no PID 1, no systemd, no service manager, no <code>loginctl</code>. <code>hermes gateway install</code> (which wires a systemd <em>user unit</em> on Linux) is meaningless here. The entire service layer collapses to:</p>
+<pre><code class="language-bash">nohup hermes gateway run &gt; ~/.hermes/logs/gateway.log 2&gt;&amp;1 &amp;
+echo &quot;Gateway PID: $!&quot;
+</code></pre>
+<p>That's the whole "server room": one <code>nohup</code>'d process, one log file, surviving the terminal being closed. Later sessions showed the messy reality of this model — kill -9 zombies reporting in late, the Discord deps install hanging in a dead process, restarts being manual. No supervision, no auto-restart, no wake-lock guarantee (Android can still reap the process under memory pressure; <code>termux-wake-lock</code> is the mitigation that got added later).</p>
+<p><strong>Lesson:</strong> on constrained platforms, the service manager <em>is</em> a shell one-liner. Plan for crashes, not just for clean shutdowns.</p>
+<h2>3. The device audit (what we actually had)</h2>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Spec</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SoC</td>
+<td>8 cores, aarch64</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>11 GB (4.3 free at audit)</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>221 GB (89 free)</td>
+</tr>
+<tr>
+<td>OS</td>
+<td>Android 16</td>
+</tr>
+<tr>
+<td>Context</td>
+<td>No root, <code>untrusted_app</code> context, no display</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>untrusted_app</code> SELinux context is the silent killer — it's why many Linux tricks die before they start: no raw sockets in some paths, restricted <code>/proc</code> visibility, no kernel module access.</p>
+<h2>4. proot Ubuntu — the fake-root escape hatch</h2>
+<p>Termux is a real userland but a limited one. The escape hatch: <strong>proot-distro Ubuntu</strong> — a userspace "root" via <code>proot</code> (ptrace-based syscall interception, no kernel changes). This unlocked:<br />
+- <code>apt</code> (a real distro package manager)<br />
+- Python wheels that need glibc (Termux is bionic)<br />
+- Firefox ESR 140.11.0 + geckodriver 0.36.0 for browser automation</p>
+<p><strong>What it could NOT unlock:</strong> Docker.</p>
+<pre><code class="language-bash"># Docker 29.1.3 installed fine inside proot...
+dockerd → failed: operation not permitted
+</code></pre>
+<p>proot cannot create <strong>kernel namespaces</strong> (<code>clone(CLONE_NEWNS)</code> etc. get intercepted/denied) — the fundamental primitive containers need. Docker inside proot Ubuntu is a non-starter. The fallback for isolation: plain processes, <code>setsid</code>, and discipline.</p>
+<h2>5. Browser automation on a phone</h2>
+<p><code>agent-browser</code> v0.27.0 (musl build) + Firefox ESR + geckodriver, inside proot Ubuntu. Verified end-to-end: navigate → title/URL. This became the backbone for everything that needed a real browser later (Selenium driving the DuckDuckGo HTML page, LinkedIn CDP research, etc.).</p>
+<h2>6. The search-backend saga (the day's real war)</h2>
+<p>The phone's <strong>mobile carrier IP</strong> is poisoned for search engines:</p>
+<table>
+<thead>
+<tr>
+<th>Backend</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SearXNG public instance</td>
+<td>429</td>
+</tr>
+<tr>
+<td>DuckDuckGo API</td>
+<td>blocked</td>
+</tr>
+<tr>
+<td>Google</td>
+<td>captcha wall</td>
+</tr>
+<tr>
+<td><strong>DuckDuckGo HTML page via Selenium</strong></td>
+<td><strong>✅ ~8–10 s/query</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The surviving design: a Selenium-driven fetch of DDG's <em>non-JS HTML page</em> (the legacy endpoint that still renders without JavaScript), parsed for results. <code>~/.hermes/scripts/search.py</code> — the first homegrown search tool, later replaced by proper backends once the VPS era began (Exa, jina, agent-reach).</p>
+<p><strong>Lesson:</strong> on constrained networks, the "ugly" endpoint (no-JS HTML) is often the most reliable API. The web's legacy surfaces are its most resilient.</p>
+<h2>7. Spotify OAuth from a phone browser</h2>
+<p>PKCE flow, redirect URI <code>http://127.0.0.1:43827/spotify/callback</code>. The user authorized from the phone browser manually (the app is installed on the same device — the redirect hit the local listener). War story: port 43827 stuck in <code>TIME_WAIT</code> between attempts — the listener couldn't rebind; workaround was trying port 43000 until 43827 cleared. After auth: <strong>played Central Cee on device "Krash".</strong> First real "agent controls my life" moment.</p>
+<h2>8. TTS — the first voice bubble</h2>
+<p>Edge TTS (free, no key) worked on day 1 — a voice message bubble sent from Termux. This later became the STT/TTS stack (faster-whisper local + Edge/ElevenLabs).</p>
+<h2>9. Gemini CLI auth: the AQ-key trap</h2>
+<p><code>gemini</code> CLI v0.44.1 installed. The user's API key from AI Studio was <code>AQ.…</code> format — it works via <strong>REST</strong> (<code>gemini-3.5-flash</code> answered "Hello" over curl) but the CLI's embedded SDK rejects it (expects <code>AIzaSy…</code>). Lesson: sandboxed key formats vs SDK expectations — always test the exact tool's auth path, not the provider's REST API.</p>
+<h2>10. Vision: not on day 1</h2>
+<p>DeepSeek V4 Flash is text-only — no vision tool in session. (This came back to bite later: the config's Google vision key turned out to be a dead placeholder, and the fix was a <strong>local qwen2.5vl:3b</strong> in ollama — the same "run it yourself" pattern.) On day 1, "can you read images?" → no.</p>
+<h2>11. The same evening: the migration plan</h2>
+<p>Evening session — planning the move to a new phone:<br />
+- <code>termux-backup</code> style tar of <code>/data/data/com.termux/files</code> (home + usr)<br />
+- proot-distro Ubuntu backed up separately<br />
+- OAuth tokens (Spotify, Gmail) are file-based → survive the move<br />
+- <strong>Pitfall documented:</strong> Python venvs have hardcoded paths — a fresh <code>hermes-agent</code> install + config/skills/memory restore is cleaner than moving venvs</p>
+<p>This planning paid off ~11 weeks later, when the migration was to something better than a new phone: <strong>a free Oracle VPS</strong> (Aug 16 — "you from oracle now right?").</p>
+<hr />
+<h2>What the post glosses over (the point of this blog)</h2>
+<p>The LinkedIn post is the <em>moment</em>. This is the <em>mechanism</em>: no systemd → <code>nohup</code>; no kernel → proot; no namespaces → no Docker; no clean IP → Selenium-on-HTML; no display → phone-browser OAuth; no budget → free tiers everywhere.</p>
+<p>Every constraint became a design decision that survived the migration. The VPS didn't erase the phone lessons — it inherited them: the free-model economy (Jio Google AI Pro, z.ai GLM, ollama), the local-everything stack (nomic embeddings, faster-whisper, qwen2.5vl), and the discipline of measuring what actually works before scaling what doesn't.</p>
+<p><em>Next chapter: the free-model economy — running an agent 24/7 on a ~₹0 bill.</em></p>
+  <footer>
+    <a href="index.html">← All chapters</a> · By <a href="https://github.com/kragent66-glitch">Utkarsh Bhangale</a> · all rights reserved
+  </footer>
+</div>
+</body>
+</html>
