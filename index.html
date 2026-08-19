@@ -4,47 +4,96 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Agent Journey — an open experiment, told in public</title>
+<meta name="description" content="From a nohup in Termux to a self-posting lab: the deep technical record of building an AI agent on a phone, then graduating it to the cloud.">
 <meta property="og:title" content="Agent Journey — an open experiment, told in public">
-<meta property="og:description" content="From a nohup in Termux to a self-posting lab: the deep technical record of building an AI agent on a phone, then graduating it to the cloud.">
+<meta property="og:description" content="The deep technical record of building an AI agent from a phone terminal to a self-posting lab.">
 <meta property="og:image" content="https://kragent66-glitch.github.io/agent-journey/og-card.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div id="progress"></div>
+
 <div class="wrap">
-  <header class="top">
-    <div class="kicker">An open journey · day-by-day engineering record</div>
-    <h1>Agent Journey</h1>
-    <div class="sub">The deep technical companion to the LinkedIn series — what the posts gloss over, in full: constraints, failures, decisions, code.</div>
-    <img class="banner" src="og-card.png" alt="Day 1 banner: born in a phone terminal">
+  <header class="hero">
+    <span class="eyebrow">An open journey, told in public</span>
+    <h1>Agent <em>Journey</em></h1>
+    <p class="hero-sub">The deep technical record of one AI agent: <b>born in a phone terminal</b>, raised on free models, and now publishing its own story.</p>
     <div class="chips">
-      <span class="chip">Termux</span><span class="chip">no systemd</span><span class="chip">proot</span>
-      <span class="chip">Oracle VPS</span><span class="chip">free-model economy</span><span class="chip">open experiment</span>
+      <span class="chip">Termux</span>
+      <span class="chip">no systemd</span>
+      <span class="chip">proot</span>
+      <span class="chip">Oracle VPS</span>
+      <span class="chip">free-model economy</span>
     </div>
+    <figure class="hero-fig">
+      <img src="og-card.png" alt="Day 1: the agent's first conversation, rendered as a phone terminal" width="1200" height="627">
+      <figcaption>Day 1, May 30 2026: the first conversation, from a phone terminal</figcaption>
+    </figure>
   </header>
 
-  <h2>Chapters</h2>
+  <section class="chapters">
+    <h2>Chapters</h2>
+    <p class="lede">What the LinkedIn posts gloss over: constraints, failures, decisions, code. One chapter per phase.</p>
 
-  <div class="post-card">
-    <div class="date">Day 1 · May 30, 2026</div>
-    <h3><a href="day1.html">Running an AI Agent on a Phone — Termux, no systemd</a></h3>
-    <p>The first message. <code>systemctl: command not found</code>. A <code>nohup</code> as service manager. proot Ubuntu, the Docker dead-end, the search-backend war, Spotify OAuth from a phone browser, and the same evening's migration plan.</p>
-  </div>
+    <div class="chap">
+      <span class="num">01</span>
+      <span class="date">Day 1 · May 30, 2026</span><span class="status">LIVE</span>
+      <h3><a href="day1.html">Running an AI Agent on a Phone</a></h3>
+      <p>The first message. <code>systemctl: command not found</code>. A <code>nohup</code> as service manager. proot Ubuntu, the Docker dead-end, the search-backend war, Spotify OAuth from a phone browser, and the same evening's migration plan.</p>
+    </div>
 
-  <div class="post-card">
-    <div class="date">Coming next</div>
-    <h3>The free-model economy — running an agent 24/7 on a ~₹0 bill</h3>
-    <p>OmniRoute, stacked free tiers (Jio Google AI Pro, z.ai GLM, ollama), peak-hour model flipping, and why "no paid model for anything scheduled" became a hard rule.</p>
-  </div>
+    <div class="chap">
+      <span class="num">02</span>
+      <span class="date">Coming next</span><span class="status soon">IN PROGRESS</span>
+      <h3>The free-model economy</h3>
+      <p>Running an agent 24/7 on a ~₹0 bill: OmniRoute, stacked free tiers (Jio Google AI Pro, z.ai GLM, ollama), peak-hour model flipping, and why "no paid model for anything scheduled" became a hard rule.</p>
+    </div>
 
-  <div class="post-card">
-    <div class="date">Coming next</div>
-    <h3>The experiment — protocol before results</h3>
-    <p>ASWP: preregistration, adversarial design review, the n=5 trap, the winner's curse, and why a credible negative result is worth publishing.</p>
-  </div>
+    <div class="chap">
+      <span class="num">03</span>
+      <span class="date">Coming next</span><span class="status soon">IN PROGRESS</span>
+      <h3>The experiment</h3>
+      <p>ASWP: preregistration, adversarial design review, the n=5 trap, the winner's curse, and why a credible negative result is worth publishing.</p>
+    </div>
+  </section>
 
   <footer>
-    By <a href="https://github.com/kragent66-glitch">Utkarsh Bhangale</a> · written with the agent the journey is about · all rights reserved
+    <div class="row">
+      <span>By <a href="https://github.com/kragent66-glitch">Utkarsh Bhangale</a></span>
+      <span>Written with the agent this journey is about</span>
+      <span>All rights reserved</span>
+    </div>
   </footer>
 </div>
+
+<script>
+(function () {
+  var p = document.getElementById('progress');
+  var ticking = false;
+  function paint() {
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    p.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + '%';
+    ticking = false;
+  }
+  window.addEventListener('scroll', function () {
+    if (!ticking) { ticking = true; requestAnimationFrame(paint); }
+  }, { passive: true });
+  paint();
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduce) {
+    var rows = document.querySelectorAll('.chap');
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.18 });
+    rows.forEach(function (r) { io.observe(r); });
+  } else {
+    document.querySelectorAll('.chap').forEach(function (r) { r.classList.add('in'); });
+  }
+})();
+</script>
 </body>
 </html>
