@@ -83,7 +83,12 @@ h1 em { font-style: italic; color: var(--gold); }
 .chap h3 a { color: var(--ink); }
 .chap h3 a:hover { color: var(--gold); }
 .chap p { color: var(--muted); font-size: 15.5px; max-width: 600px; }
-.chap .soon { color: var(--faint); font-style: italic; }
+.chap h3.soon { color: var(--muted); font-style: italic; }
+.chap .read {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--gold); display: inline-block; margin-top: 16px; border-bottom: 1px solid rgba(227, 179, 65, .4); padding-bottom: 2px;
+}
+.chap .read:hover { color: var(--gold-hi); border-color: var(--gold-hi); }
 
 /* footer */
 footer { margin-top: 110px; padding: 30px 0 48px; border-top: 1px solid var(--hairline); }
