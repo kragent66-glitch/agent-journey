@@ -38,6 +38,13 @@ toc_html = '\n'.join(f'<li><a href="#{sid}">{txt}</a></li>' for sid, txt in toc)
 toc_html = f'<nav class="toc" aria-label="On this page"><div class="toc-title">On this page</div><ol>{toc_html}</ol></nav>'
 
 pub = '2026-05-30T06:13:00+05:30'
+bread = f'''<script type="application/ld+json">{{
+"@context":"https://schema.org",
+"@type":"BreadcrumbList",
+"itemListElement":[
+{{"@type":"ListItem","position":1,"name":"Agent Journey","item":"{SITE}/"}},
+{{"@type":"ListItem","position":2,"name":"Day 1 Deep Dive","item":"{SITE}/day1.html"}}
+]}}</script>'''
 jsonld = f'''<script type="application/ld+json">{{
 "@context":"https://schema.org",
 "@type":"BlogPosting",
@@ -61,12 +68,14 @@ html_doc = f'''<!DOCTYPE html>
 <meta property="og:description" content="The engineering record of day 1: no systemd, nohup as service manager, proot, the search-backend war. {read_min} min read.">
 <meta property="og:type" content="article">
 <meta property="og:image" content="{SITE}/og-card.png">
+<link rel="canonical" href="{SITE}/day1.html">
 <link rel="alternate" type="application/rss+xml" title="Agent Journey" href="{SITE}/feed.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 {jsonld}
+{bread}
 </head>
 <body>
 <div id="progress"></div>
@@ -186,6 +195,18 @@ html_doc = f'''<!DOCTYPE html>
 
 open(OUT, 'w').write(html_doc)
 print('day1.html:', len(html_doc), 'bytes,', len(toc), 'TOC entries,', read_min, 'min read')
+
+# sitemap + robots
+smap = f'''<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>{SITE}/</loc></url>
+<url><loc>{SITE}/day1.html</loc></url>
+</urlset>
+'''
+open('/home/ubuntu/agent-journey/sitemap.xml', 'w').write(smap)
+open('/home/ubuntu/agent-journey/robots.txt', 'w').write(
+    'User-agent: *\nAllow: /\n\nSitemap: ' + SITE + '/sitemap.xml\n')
+print('sitemap.xml + robots.txt written')
 
 # feed.xml (live posts only)
 desc = html.escape("The deep technical record of one AI agent: born in a phone terminal, raised on free models, now publishing its own story.")
